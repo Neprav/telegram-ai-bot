@@ -1,0 +1,9 @@
+venv/
+*.pyc
+*.pyo
+*.log
+.env
+.gitignore
+config.json
+README.md
+simple_gui_client.py

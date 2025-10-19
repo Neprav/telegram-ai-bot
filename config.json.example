@@ -1,0 +1,25 @@
+{
+    "insults": [
+        "stupid",
+        "idiot",
+        "dumb",
+        "fool",
+        "moron"
+    ],
+    "insult_responses": [
+        "Hey, let's keep it civil!",
+        "No need for that kind of language",
+        "That's not very nice",
+        "Let's have a normal conversation",
+        "Come on, be respectful"
+    ],
+    "error_responses": [
+        "Sorry, I don't understand that",
+        "I'm not sure what you mean",
+        "Could you rephrase that?",
+        "I can't answer that question",
+        "That's beyond my capabilities"
+    ],
+    "prompt_template": "You are a Telegram bot with a specific personality. Respond in a conversational style. Keep responses under 50 words. User {user_name} asks: "
+}
+
