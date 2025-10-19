@@ -86,21 +86,19 @@ def __init__(self, config):
 JSON-based configuration file containing:
 
 **Sections:**
-- `insults`: Array of profanity/offensive words for detection (18 words)
-- `insult_responses`: Array of 11 witty comeback responses
+- `insults`: Array of profanity/offensive words for detection (5 example words)
+- `insult_responses`: Array of 5 polite comeback responses
 - `error_responses`: Array of 5 error handling responses
 - `prompt_template`: System prompt that defines bot personality
 
 **Prompt Template Details:**
-The prompt instructs the AI to:
-- Act as "Gena" created by Kirill
-- Adopt a cynical, informal personality
-- Be a beer expert and philosopher
-- Use conversational, informal language
-- Be more polite to female users
-- Keep responses under 50 words
-- Avoid using '*' for formatting
-- Respond with "Хз" if uncertain
+The example template is a basic conversational prompt that:
+- Defines the bot as a Telegram bot with a specific personality
+- Instructs to respond in a conversational style
+- Keeps responses under 50 words
+- Includes the user's name in the context
+
+**Customization:** You should modify the `prompt_template` in your `config.json` to define your bot's unique personality, tone, expertise areas, and behavioral guidelines.
 
 #### 4. GUI Test Client (`simple_gui_client.py`)
 
@@ -248,15 +246,17 @@ curl -X POST "https://api.telegram.org/bot<TOKEN>/setWebhook" \
 
 ### Interacting with the Bot
 
-In any Telegram chat where the bot is present:
+In any Telegram chat where the bot is present, mention the bot's name to activate it:
 
 ```
-User: гена, what's the best beer?
-Bot: [Cynical, informal response about beer]
+User: гена, how are you today?
+Bot: [Conversational response based on your configured personality]
 
-User: гена какая погода?
-Bot: [Response in bot's characteristic style]
+User: гена tell me something interesting
+Bot: [Response according to the prompt template in your config.json]
 ```
+
+**Note:** The actual bot responses will depend entirely on your custom `prompt_template` and personality configuration in `config.json`. The examples above show the activation pattern, not specific response content.
 
 ### Testing Locally
 
