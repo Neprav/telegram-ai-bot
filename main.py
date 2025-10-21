@@ -49,6 +49,11 @@ else:
 
 handler = MessageHandler(config)
 
+TRIGGER_WORD = config.get("trigger_word")
+if not TRIGGER_WORD:
+    raise ValueError("trigger_word не задан в конфигурации")
+TRIGGER_WORD = TRIGGER_WORD.lower()
+
 TELEGRAM_TOKEN = os.environ.get("TELEGRAM_TOKEN")
 if not TELEGRAM_TOKEN:
     raise ValueError("TELEGRAM_TOKEN не задан! Убедитесь, что он установлен в переменных окружения.")
@@ -74,8 +79,8 @@ def webhook():
         text = message.get("text", "").strip().lower()
         user_name = message["from"].get("first_name", "Пользователь")
 
-        if text.startswith(("гена ", "гена,")):
-            question = text.replace("гена ", "", 1).replace("гена,", "", 1).strip()
+        if text.startswith((f"{TRIGGER_WORD} ", f"{TRIGGER_WORD},")):
+            question = text.replace(f"{TRIGGER_WORD} ", "", 1).replace(f"{TRIGGER_WORD},", "", 1).strip()
             response_text = handler.handle_message(question, user_name)
             send_message(chat_id, response_text, reply_to_message_id=message_id)
     return "ok"
