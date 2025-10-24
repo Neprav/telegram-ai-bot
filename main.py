@@ -75,12 +75,25 @@ def webhook():
     if "message" in data:
         message = data["message"]
         chat_id = message["chat"]["id"]
+        chat_type = message["chat"]["type"]
         message_id = message.get("message_id")
         text = message.get("text", "").strip().lower()
         user_name = message["from"].get("first_name", "Пользователь")
 
-        if text.startswith((f"{TRIGGER_WORD} ", f"{TRIGGER_WORD},")):
+        # В приватных чатах отвечаем на все сообщения
+        # В группах требуем триггерное слово
+        should_respond = False
+        question = text
+        
+        if chat_type == "private":
+            # В приватном чате отвечаем на все сообщения
+            should_respond = True
+        elif text.startswith((f"{TRIGGER_WORD} ", f"{TRIGGER_WORD},")):
+            # В группе отвечаем только если есть триггерное слово
+            should_respond = True
             question = text.replace(f"{TRIGGER_WORD} ", "", 1).replace(f"{TRIGGER_WORD},", "", 1).strip()
+        
+        if should_respond:
             response_text = handler.handle_message(question, user_name)
             send_message(chat_id, response_text, reply_to_message_id=message_id)
     return "ok"
