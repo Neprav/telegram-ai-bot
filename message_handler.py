@@ -10,7 +10,7 @@ class MessageHandler:
         self.config = config
         api_key = os.getenv("GEMINI_API_KEY")
         if not api_key:
-            raise ValueError("GEMINI_API_KEY не задан! Проверьте переменные окружения.")
+            raise ValueError("GEMINI_API_KEY is not set! Check environment variables.")
         
         self.client = genai.Client(api_key=api_key)
         self.model_config = {
@@ -32,34 +32,34 @@ class MessageHandler:
                 contents=question,
                 config=self.model_config
             )
-            logging.info(f"Gemini ответил за {time.time() - start_time:.2f} секунд")
+            logging.info(f"Gemini responded in {time.time() - start_time:.2f} seconds")
             return response.text
         except ValueError as e:
-            logging.error(f"Ошибка Gemini API: {e}")
+            logging.error(f"Gemini API error: {e}")
             return None
 
     def handle_message(self, message, user_name, context=None):
         """
-        Обрабатывает входящее сообщение и возвращает ответ.
+        Processes incoming message and returns a response.
         
         Args:
-            message (str): Текст сообщения от пользователя
-            user_name (str): Имя пользователя
-            context (str, optional): Контекст из предыдущего сообщения (reply_to_message)
+            message (str): Message text from user
+            user_name (str): User name
+            context (str, optional): Context from previous message (reply_to_message)
             
         Returns:
-            str: Ответ на сообщение
+            str: Response to the message
         """
         if self.is_insult(message):
             return random.choice(self.config['insult_responses'])
 
         prompt = self.config['prompt_template'].format(user_name=user_name)
         
-        # Если есть контекст, добавляем его естественным образом в промпт
+        # If there is context, add it naturally to the prompt
         if context:
-            # Убираем завершающие ": " из промпта для естественной вставки контекста
+            # Remove trailing ": " from prompt for natural context insertion
             base_prompt = prompt.rstrip(': ')
-            full_question = f"{base_prompt} в ответ на твое сообщение \"{context}\": {message}"
+            full_question = f"{base_prompt} in response to your message \"{context}\": {message}"
         else:
             full_question = prompt + message
             
