@@ -59,6 +59,22 @@ if not TELEGRAM_TOKEN:
     raise ValueError("TELEGRAM_TOKEN не задан! Убедитесь, что он установлен в переменных окружения.")
 
 TELEGRAM_API_URL = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/sendMessage"
+TELEGRAM_BOT_USERNAME = None  # Будет получен при первом запросе
+
+def get_bot_info():
+    """Получение информации о боте (для определения его user_id)"""
+    global TELEGRAM_BOT_USERNAME
+    if TELEGRAM_BOT_USERNAME is None:
+        try:
+            url = f"https://api.telegram.org/bot{TELEGRAM_TOKEN}/getMe"
+            response = requests.get(url, timeout=10)
+            if response.status_code == 200:
+                bot_info = response.json()
+                TELEGRAM_BOT_USERNAME = bot_info["result"]["username"]
+                logging.info(f"Бот: @{TELEGRAM_BOT_USERNAME}")
+        except Exception as e:
+            logging.error(f"Ошибка получения информации о боте: {e}")
+    return TELEGRAM_BOT_USERNAME
 
 def send_message(chat_id, text, reply_to_message_id=None):
     payload = {"chat_id": chat_id, "text": text, "reply_to_message_id": reply_to_message_id}
@@ -77,24 +93,44 @@ def webhook():
         chat_id = message["chat"]["id"]
         chat_type = message["chat"]["type"]
         message_id = message.get("message_id")
-        text = message.get("text", "").strip().lower()
+        text = message.get("text", "").strip()
+        text_lower = text.lower()
         user_name = message["from"].get("first_name", "Пользователь")
+        
+        # Получаем информацию о боте (для проверки reply)
+        get_bot_info()
 
-        # В приватных чатах отвечаем на все сообщения
-        # В группах требуем триггерное слово
+        # Проверяем, есть ли reply_to_message
+        reply_to_message = message.get("reply_to_message")
+        context = None
+        is_reply_to_bot = False
+        
+        if reply_to_message:
+            # Проверяем, является ли reply ответом на сообщение бота
+            replied_from = reply_to_message.get("from", {})
+            if replied_from.get("is_bot") and replied_from.get("username") == TELEGRAM_BOT_USERNAME:
+                is_reply_to_bot = True
+                # Извлекаем контекст из сообщения, на которое отвечают
+                context = reply_to_message.get("text", "")
+                logging.info(f"Обнаружен reply на сообщение бота. Контекст: {context[:50]}...")
+
+        # Определяем, должен ли бот ответить
         should_respond = False
         question = text
         
         if chat_type == "private":
             # В приватном чате отвечаем на все сообщения
             should_respond = True
-        elif text.startswith((f"{TRIGGER_WORD} ", f"{TRIGGER_WORD},")):
+        elif is_reply_to_bot:
+            # В группе отвечаем, если это reply на наше сообщение
+            should_respond = True
+        elif text_lower.startswith((f"{TRIGGER_WORD} ", f"{TRIGGER_WORD},")):
             # В группе отвечаем только если есть триггерное слово
             should_respond = True
-            question = text.replace(f"{TRIGGER_WORD} ", "", 1).replace(f"{TRIGGER_WORD},", "", 1).strip()
+            question = text_lower.replace(f"{TRIGGER_WORD} ", "", 1).replace(f"{TRIGGER_WORD},", "", 1).strip()
         
         if should_respond:
-            response_text = handler.handle_message(question, user_name)
+            response_text = handler.handle_message(question, user_name, context=context)
             send_message(chat_id, response_text, reply_to_message_id=message_id)
     return "ok"
 

@@ -38,13 +38,14 @@ class MessageHandler:
             logging.error(f"Ошибка Gemini API: {e}")
             return None
 
-    def handle_message(self, message, user_name):
+    def handle_message(self, message, user_name, context=None):
         """
         Обрабатывает входящее сообщение и возвращает ответ.
         
         Args:
             message (str): Текст сообщения от пользователя
             user_name (str): Имя пользователя
+            context (str, optional): Контекст из предыдущего сообщения (reply_to_message)
             
         Returns:
             str: Ответ на сообщение
@@ -53,7 +54,15 @@ class MessageHandler:
             return random.choice(self.config['insult_responses'])
 
         prompt = self.config['prompt_template'].format(user_name=user_name)
-        full_question = prompt + message
+        
+        # Если есть контекст, добавляем его естественным образом в промпт
+        if context:
+            # Убираем завершающие ": " из промпта для естественной вставки контекста
+            base_prompt = prompt.rstrip(': ')
+            full_question = f"{base_prompt} в ответ на твое сообщение \"{context}\": {message}"
+        else:
+            full_question = prompt + message
+            
         response = self.ask_gemini(full_question)
 
         return response if response else random.choice(self.config['error_responses'])
