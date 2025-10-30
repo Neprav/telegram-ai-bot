@@ -1,19 +1,19 @@
 FROM python:3.10-slim
 
-# Устанавливаем рабочую директорию
+# Set working directory
 WORKDIR /app
 
-# Копируем файлы проекта
+# Copy project files
 COPY . /app
 
-# Устанавливаем зависимости
+# Install dependencies
 RUN pip install --no-cache-dir -r requirements.txt
 
-# Переменная окружения для порта
+# Environment variable for port
 ENV PORT=8080
 
-# Открываем порт 8080 (необязательно для Cloud Run, но полезно для тестов локально)
+# Expose port 8080 (optional for Cloud Run, but useful for local testing)
 EXPOSE 8080
 
-# Запускаем приложение
+# Start the application
 CMD ["gunicorn", "-w", "1", "-k", "gevent", "-b", "0.0.0.0:8080", "--timeout", "60", "main:app"]
